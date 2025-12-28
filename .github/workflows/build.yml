@@ -59,13 +59,13 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           ditto -c -k --sequesterRsrc --keepParent \
-            "dist/Are You Comment Banned?.app" \
+            "dist/Are You Comment Banned.app" \
             "AreYouCommentBanned-macos.zip"
       
       - name: Package Build (Linux)
         if: runner.os == 'Linux'
         run: |
-          tar -czf AreYouCommentBanned-linux.tar.gz -C dist "Are You Comment Banned?"
+          tar -czf AreYouCommentBanned-linux.tar.gz -C dist "Are You Comment Banned"
       
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
