@@ -1,0 +1,99 @@
+name: Build Program
+on:
+  push:
+    tags:
+      - v*
+  
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Windows
+            os: windows-latest
+          - name: macOS
+            os: macos-latest
+          - name: Linux
+            os: ubuntu-latest
+    
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install uv (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+      
+      - name: Add uv to PATH (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "$env:USERPROFILE\.cargo\bin" >> $env:GITHUB_PATH
+      
+      - name: Install uv (macOS/Linux)
+        if: runner.os != 'Windows'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+      
+      - run: uv python install
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Build Program
+        run: |
+          uv run pyinstaller --windowed --distpath=dist/ --name "Are You Comment Banned?" src/main.py
+      
+      - name: Package Build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Compress-Archive -Path dist\Are* -DestinationPath AreYouCommentBanned-win.zip
+      
+      - name: Package Build (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            "dist/Are You Comment Banned?.app" \
+            "AreYouCommentBanned-macos.zip"
+      
+      - name: Package Build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          tar -czf AreYouCommentBanned-linux.tar.gz -C dist "Are You Comment Banned?"
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AreYouCommentBanned-${{ runner.os }}
+          path: |
+            AreYouCommentBanned-*.zip
+            AreYouCommentBanned-*.tar.gz
+  
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: ['build']
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: false
+          files: |
+            artifacts/**/*.zip
+            artifacts/**/*.tar.gz
