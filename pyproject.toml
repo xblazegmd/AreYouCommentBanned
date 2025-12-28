@@ -1,0 +1,9 @@
+[project]
+name = "AreYouCommentBanned"
+version = "1.0"
+description = "Verify if you are comment banned in Geometry Dash"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "requests>=2.32.5",
+]
