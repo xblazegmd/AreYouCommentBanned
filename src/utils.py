@@ -1,6 +1,10 @@
 import base64
 import hashlib
 
+API = "http://www.boomlings.com/database/"
+SECRET = "Wmfd2893gb7"
+HEADERS = { "User-Agent": "" }
+
 def xor(text: str, key: str) -> str:
     res = []
     for i in range(len(text)):
