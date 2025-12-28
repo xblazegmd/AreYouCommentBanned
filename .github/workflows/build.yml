@@ -48,7 +48,7 @@ jobs:
       
       - name: Build Program
         run: |
-          uv run pyinstaller --windowed --distpath=dist/ --name "Are You Comment Banned?" src/main.py
+          uv run pyinstaller --windowed --distpath=dist/ --name "Are You Comment Banned" src/main.py
       
       - name: Package Build (Windows)
         if: runner.os == 'Windows'
