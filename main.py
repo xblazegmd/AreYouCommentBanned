@@ -161,7 +161,7 @@ class App(tk.Tk):
         uploadCommentRes = uploadCommentReq.text
         
         if uploadCommentRes == "-1":
-            messagebox.showerror(title="Error", message="Failed to upload comment (no you're not comment banned this is different)")
+            messagebox.showerror(title="Error", message="Failed to upload comment (no you're not comment banned this is different). Possibly related to an incorrect password")
             return
 
         self.withdraw()
