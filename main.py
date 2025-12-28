@@ -1,11 +1,45 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from utils import *
+
+import base64
 import requests
+from enum import Enum
 
 API = "http://www.boomlings.com/database/"
 SECRET = "Wmfd2893gb7"
 HEADERS = { "User-Agent": "" }
+
+class Status(Enum):
+    NORMAL = "Not banned",
+    BANNED = "Banned",
+    PERMABANNED = "Banned"
+
+class StatusPopup(tk.Toplevel):
+    def __init__(self, master, status: Status, duration: int | None = None, reason: str = "N/A") -> None:
+        super().__init__(master)
+
+        if status == Status.BANNED and duration is None:
+            raise ValueError("Expected value for 'duration'")
+
+        self.title("Status")
+        self.geometry("300x200")
+        self.resizable(False, False)
+        self.protocol("WM_DELETE_WINDOW", self.onExit)
+
+        # Info labels
+        ttk.Label(self, text=f"Status: {status.value[0]}").pack(pady=10)
+
+        if status != Status.NORMAL:
+            ttk.Label(self, text=f"Duration: {'PERMANENT' if status == Status.PERMABANNED else duration}").pack(pady=10)
+            ttk.Label(self, text=f"Reason: {reason}").pack(pady=10)
+
+        ttk.Button(self, text="Ok", command=self.onExit).pack(pady=10)
+    
+    def onExit(self):
+        self.master.deiconify()
+        self.destroy()
 
 class App(tk.Tk):
     def __init__(self) -> None:
@@ -72,8 +106,14 @@ class App(tk.Tk):
     def onBtClick(self) -> None:
         username = self.username.get()
         password = self.password.get()
-        levelID = int(self.levelID.get())
+        levelIDPre = self.levelID.get()
         comment = self.comment.get()
+
+        if not username or not password or not levelIDPre or not comment:
+            messagebox.showerror(title="Error", message="Missing options")
+            return
+
+        levelID = int(levelIDPre)
 
         # Get accountID
         accIDReqParams = {
@@ -91,20 +131,55 @@ class App(tk.Tk):
             messagebox.showerror(title="Error", message=f"User '{username}' was not found")
             return
         
-        res = accIDReq.text.split(":")
-        accID = int(res[3])
-        print(accID)
+        accIDRes = parseKeyValStr(accIDReq.text)
+        accID = int(accIDRes["16"]) # 16 = accountID
 
         # Try and upload comment
+        commentEnc = base64.urlsafe_b64encode(comment.encode()).decode()
+        percent = 0
+        gjp = gjp2(password)
+        chk = generateChk([username, commentEnc, levelID, percent], "29481", "0xPT6iUrtws0J")
+
         uploadCommentReqParams = {
             "accountID": accID,
-            "gjp": "",
-            "comment": "",
+            "gjp2": gjp,
+            "userName": username,
+            "comment": commentEnc,
             "levelID": levelID,
-            "percent": 0,
-            "chk": "",
+            "percent": percent,
+            "chk": chk,
             "secret": SECRET
         }
+        print(uploadCommentReqParams)
+
+        uploadCommentReq = requests.post(API + "uploadGJComment21.php", data=uploadCommentReqParams, headers=HEADERS)
+
+        if not uploadCommentReq.ok:
+            messagebox.showerror(title="Error", message=f"An unexpected error occured: {uploadCommentReq}")
+            return
+
+        uploadCommentRes = uploadCommentReq.text
+        
+        if uploadCommentRes == "-1":
+            messagebox.showerror(title="Error", message="Failed to upload comment (no you're not comment banned this is different)")
+            return
+
+        self.withdraw()
+
+        # The moment of truth: are you comment banned?
+        if uploadCommentRes == "-10":
+            StatusPopup(self, Status.PERMABANNED)
+        elif uploadCommentRes.startswith("temp_"):
+            info = parseTempBan(uploadCommentRes)
+            StatusPopup(self, Status.BANNED, info["duration"], info["reason"])
+        else:
+            StatusPopup(self, Status.NORMAL)
+        
+        # Reset all inputs
+        self.username.set("")
+        self.password.set("")
+        self.levelID.set("")
+        self.comment.set("")
 
 def main() -> None:
     app = App()
