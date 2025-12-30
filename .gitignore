@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Screw macOS
+.DS_Store
