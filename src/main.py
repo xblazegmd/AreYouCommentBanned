@@ -60,7 +60,7 @@ class App(tk.Tk):
         # The Moment of Truth
         ttk.Button(self, text="Am I Comment Banned?", command=self.onBtClick).pack(pady=10)
     
-    def validateLevelIDEntry(self, P: str) -> None:
+    def validateLevelIDEntry(self, P: str) -> bool:
         return P.isdigit() or P == ""
     
     def onCommentEntryWrite(self, *args) -> None:

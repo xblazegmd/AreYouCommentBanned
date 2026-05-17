@@ -16,7 +16,7 @@ class StatusPopup(tk.Toplevel):
         self,
         master,
         status: Status,
-        duration: int | None = None,
+        duration: str | None = None,
         reason: str = "N/A",
         accID: int | None = None, 
         commentID: int | None = None,
