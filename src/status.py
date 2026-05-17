@@ -7,7 +7,7 @@ import requests
 from enum import Enum
 
 class Status(Enum):
-    NORMAL = "Not banned",
+    NORMAL = "Not Banned",
     BANNED = "Banned",
     PERMABANNED = "Banned"
 
@@ -34,7 +34,7 @@ class StatusPopup(tk.Toplevel):
 
         if self.status == Status.BANNED and duration is None:
             raise ValueError("Expected value for 'duration'")
-        
+
         required = {
             "accID": accID,
             "commentID": commentID,
@@ -55,7 +55,7 @@ class StatusPopup(tk.Toplevel):
         ttk.Label(self, text=f"Status: {self.status.value[0]}").pack(pady=10)
 
         if self.status != Status.NORMAL:
-            ttk.Label(self, text=f"Duration: {'PERMANENT' if self.status == Status.PERMABANNED else duration}").pack(pady=10)
+            ttk.Label(self, text=f"Duration: {'PERMANENT (most likely)' if self.status == Status.PERMABANNED else f'{duration} days'}").pack(pady=10)
             ttk.Label(self, text=f"Reason: {reason}").pack(pady=10)
 
         ttk.Button(self, text="Ok", command=self.onOkButton).pack(pady=10)

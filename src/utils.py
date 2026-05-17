@@ -34,33 +34,14 @@ def gjp2(password: str) -> str:
     return hashlib.sha1(string.encode()).hexdigest()
 
 def parseTempBan(res: str) -> dict[str, str]:
-    pieces = res.split("_", 2)
+    pieces = res.split("_")
     return {
         "duration": simplifySeconds(int(pieces[1])),
         "reason": pieces[2]
     }
 
 def simplifySeconds(seconds: int) -> str:
-    units = {
-        "years": 60 * 60 * 24 * 365,
-        "months": 60 * 60 * 24 * 30,
-        "weeks": 60 * 60 * 24 * 7,
-        "days": 60 * 60 * 24,
-        "hours": 60 * 60,
-        "minutes": 60,
-        "seconds": 1
-    }
-
-    resUnits = {}
-    for name, unit in units.items():
-        resUnits[name], seconds = divmod(seconds, unit)
-    
-    res = []
-    for unit, val in resUnits.items():
-        if val > 0:
-            name = unit[:-1] if val == 1 else unit # Singular/Plural
-            res.append(f"{val} {name}")
-    return " ".join(res)
+    return str(round(seconds / 86400))
 
 def parseKeyValStr(keyval: str) -> dict[str, str]:
     pieces = keyval.split(":")

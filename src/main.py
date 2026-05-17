@@ -125,7 +125,8 @@ class App(tk.Tk):
             return
 
         uploadCommentRes = uploadCommentReq.text
-        
+        # uploadCommentRes = "temp_3016800_Ban Evasion (fake)" # for testing comment bans even when im not comment banned
+
         if uploadCommentRes == "-1":
             messagebox.showerror(title="Error", message="Failed to upload comment (no you're not comment banned this is different). Possibly related to an incorrect password")
             return
@@ -137,7 +138,10 @@ class App(tk.Tk):
             StatusPopup(self, Status.PERMABANNED)
         elif uploadCommentRes.startswith("temp_"):
             info = parseTempBan(uploadCommentRes)
-            StatusPopup(self, Status.BANNED, info["duration"], info["reason"])
+            if info["duration"] == "35":
+                StatusPopup(self, Status.PERMABANNED, reason=info["reason"])
+            else:
+                StatusPopup(self, Status.BANNED, info["duration"], info["reason"])
         else:
             StatusPopup(self, Status.NORMAL, accID=accID, commentID=int(uploadCommentRes), levelID=levelID, gjp2=gjp)
         
