@@ -52,7 +52,7 @@ class StatusPopup(tk.Toplevel):
         self.gjp2 = gjp2
 
         # Info labels
-        ttk.Label(self, text=f"Status: {self.status.value[0]}").pack(pady=10)
+        ttk.Label(self, text=f"Status: {self.status.value}").pack(pady=10)
 
         if self.status != Status.NORMAL:
             ttk.Label(self, text=f"Duration: {'PERMANENT' if self.status == Status.PERMABANNED else f'{duration} days'}").pack(pady=10)
