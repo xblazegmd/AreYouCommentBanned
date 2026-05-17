@@ -9,4 +9,4 @@ with open("changelog.md", "r") as f:
 
         result += line
 
-print(result.strip(), end="")
+print(result.strip())
