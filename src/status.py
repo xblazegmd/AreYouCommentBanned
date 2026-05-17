@@ -55,10 +55,13 @@ class StatusPopup(tk.Toplevel):
         ttk.Label(self, text=f"Status: {self.status.value[0]}").pack(pady=10)
 
         if self.status != Status.NORMAL:
-            ttk.Label(self, text=f"Duration: {'PERMANENT (most likely)' if self.status == Status.PERMABANNED else f'{duration} days'}").pack(pady=10)
+            ttk.Label(self, text=f"Duration: {'PERMANENT' if self.status == Status.PERMABANNED else f'{duration} days'}").pack(pady=10)
             ttk.Label(self, text=f"Reason: {reason}").pack(pady=10)
 
-        ttk.Button(self, text="Ok", command=self.onOkButton).pack(pady=10)
+        ttk.Button(self, text="Ok", command=self.onOkButton).pack(pady=(10, 2))
+
+        if status != Status.NORMAL:
+            ttk.Button(self, text="What do I do now?", command=self.onHelp).pack()
     
     def onOkButton(self):
         if self.status == Status.NORMAL and messagebox.askyesno(title="Delete comment", message="Do you want to delete the comment?"):
@@ -78,7 +81,13 @@ class StatusPopup(tk.Toplevel):
                 messagebox.showinfo(title="Sucess", message="Sucessfully deleted comment")
 
         self.onExit()
-    
+
+    def onHelp(self):
+        if self.status == Status.PERMABANNED:
+            messagebox.showinfo("What do I do now?", "You rly can't do anything. You've been permanently banned/banned for an extremely long time. And you can't easily ban evade that. If you believe you've been falsely banned, contact an Elder Moderator")
+        else:
+            messagebox.showinfo("What do I do now?", "Wait until the ban is over. It'll range from either a couple of days to a couple of weeks. And please don't try to ban evade (ban evasion may result in a perma ban). If you believe you've been falsely banned, contact an Elder Moderator")
+
     def onExit(self):
         self.master.deiconify()
         self.destroy()
