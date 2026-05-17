@@ -85,7 +85,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      
+
+      - name: Get Changelog
+        id: changelog
+        run: |
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          python format_changelog.py >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         env:
@@ -93,6 +100,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.changelog }}
           prerelease: false
           files: |
             artifacts/**/*.zip
