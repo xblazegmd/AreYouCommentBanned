@@ -29,13 +29,11 @@ class App(tk.Tk):
         passwordEntry.pack(pady=(0, 10))
 
         # Disclaimer text
-        # As someone who's been making GD mods for a while, why does this formatting
-        # remind me of FLAlertLayer lol
         ttk.Label(
             self,
             text="Have in mind that to test if you're\ncomment banned, you will have to try\nand upload a comment",
             justify=tk.CENTER
-        ).pack(pady=10) # Only thing it's missing is the -> operator
+        ).pack(pady=10)
 
         # Level ID
         self.levelID = tk.StringVar()
@@ -59,16 +57,16 @@ class App(tk.Tk):
 
         # The Moment of Truth
         ttk.Button(self, text="Am I Comment Banned?", command=self.onBtClick).pack(pady=10)
-    
+
     def validateLevelIDEntry(self, P: str) -> bool:
         return P.isdigit() or P == ""
-    
+
     def onCommentEntryWrite(self, *args) -> None:
         charLimit = 100
         txt = self.comment.get()
         if len(txt) > charLimit:
             self.comment.set(txt[:charLimit])
-    
+
     def onBtClick(self) -> None:
         username = self.username.get()
         password = self.password.get()
@@ -92,12 +90,12 @@ class App(tk.Tk):
         if not accIDReq.ok:
             messagebox.showerror(title="Error", message=f"Could not find user data: {accIDReq.text}")
             return
-        
+
         if accIDReq.text == "-1":
             messagebox.showerror(title="Error", message=f"User '{username}' was not found")
             return
-        
-        accIDRes = parseKeyValStr(accIDReq.text)
+
+        accIDRes = formatResponse(accIDReq.text)
         accID = int(accIDRes["16"]) # 16 = accountID
 
         # Try and upload comment
@@ -116,7 +114,6 @@ class App(tk.Tk):
             "chk": chk,
             "secret": SECRET
         }
-        print(uploadCommentReqParams)
 
         uploadCommentReq = requests.post(API + "uploadGJComment21.php", data=uploadCommentReqParams, headers=HEADERS)
 
@@ -131,7 +128,7 @@ class App(tk.Tk):
             messagebox.showerror(title="Error", message="Failed to upload comment (no you're not comment banned this is different). Possibly related to an incorrect password")
             return
 
-        self.withdraw()
+        self.wm_withdraw()
 
         # The moment of truth: are you comment banned?
         if uploadCommentRes == "-10":
@@ -144,7 +141,7 @@ class App(tk.Tk):
                 StatusPopup(self, Status.BANNED, info["duration"], info["reason"])
         else:
             StatusPopup(self, Status.NORMAL, accID=accID, commentID=int(uploadCommentRes), levelID=levelID, gjp2=gjp)
-        
+
         # Reset all inputs
         self.username.set("")
         self.password.set("")
